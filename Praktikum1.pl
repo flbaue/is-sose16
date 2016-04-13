@@ -7,6 +7,7 @@ male(flo). /*p10*/
 female(nela). /*p4*/
 female(hanna). /*p2*/
 female(lena). /*p5*/
+female(lena2). /*p5*/
 female(linh). /*p9*/
 female(sonja). /*p7*/
 
@@ -16,6 +17,8 @@ child(hanna,nils).
 child(hanna,nela).
 child(lena,nela).
 child(lena,sam).
+child(lena2,nela).
+child(lena2,sam).
 
 child(nils,otto).
 child(nils,linh).
@@ -31,3 +34,5 @@ cousin(X,Y):- child(X,A), child(Y,B), sibling(A,B).
 niece(X,Y):- child(X,A), sibling(A,Y).
 
 /*sibling(X,Y) :- setof((X,Y), P^(child(X,P),child(Y,P), \+X=Y), Sibs), member((X,Y), Sibs), \+ (Y@<X, member((Y,X), Sibs)).*/
+
+t --> [a],[?].
