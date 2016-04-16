@@ -30,9 +30,14 @@ sibling(X,Y):- child(X,A), child(Y,A), child(X,B), child(Y,B), X\==Y, A\==B.
 brother(X,Y):- male(X), sibling(X,Y).
 sister(X,Y):- female(X), sibling(X,Y).
 halfsister(X,Y):- child(X,A), child(Y,A), child(X,B), child(Y,C), B\==C, A\==B, A\==C, not(male(X)).
-cousin(X,Y):- child(X,A), child(Y,B), sibling(A,B).
-niece(X,Y):- child(X,A), sibling(A,Y).
-
+cousine(X,Y):- female(X), child(X,A), child(Y,B), sibling(A,B).
+cousin(X,Y):- male(X), child(X,A), child(Y,B), sibling(A,B).
+niece(X,Y):- female(X), child(X,A), sibling(A,Y).
+neffe(X,Y):- male(X), child(X,A), sibling(A,Y).
+vater(X,Y):- child(Y,X), male(X).
+mutter(X,Y):- child(Y,X), female(X).
+tochter(X,Y):- female(X), child(X,Y).
+sohn(X,Y):- male(X), child(X,Y).
 /*sibling(X,Y) :- setof((X,Y), P^(child(X,P),child(Y,P), \+X=Y), Sibs), member((X,Y), Sibs), \+ (Y@<X, member((Y,X), Sibs)).*/
 
 t --> [a],[?].
