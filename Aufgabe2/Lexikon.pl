@@ -1,19 +1,24 @@
 :- consult('./Stammbaum.pl').
 :- consult('./../readsentence.pl').
 
-start() :- writeln("Frage:"), read_sentence(X), s(X, []).
+start() :- writeln("Frage:"), read_sentence(X), s(X, X, []).
 
 % Ergänzungsfrage: Wer ist der Bruder von Hanna?
 %s --> interrogativpronomen, vp(Numerus, Funktion) , pp(Name), [?], {call(Funktion, X, Name), writeln(X), Numerus == singular}.
-s --> interrogativpronomen, vp(Numerus, FunktionL) , pp(Name), [?], {c(FunktionL, X, Name), writeln(X), Numerus == singular}.
+s(X) --> interrogativpronomen, vp(Numerus, FunktionL) , pp(Name), [?], {c(FunktionL, A, Name), X = [_|R], delete([A|R], ?, Y),w(Y), Numerus == singular}.
 
 % Entscheidungsfrage: Ist Nela die Mutter des Bruders von Hanna?
 %s --> vp(singular, Name1), np(_, Funktion), pp(Name2), [?], {call(Funktion, Name1, Name2)}.
-s --> vp(singular, [Name1]), np_rec(_, FunktionL), pp(Name2), [?], {c(FunktionL, Name1, Name2)}.
+s(_) --> vp(singular, [Name1]), np_rec(_, FunktionL), pp(Name2), [?], {c(FunktionL, Name1, Name2)}.
 %s --> vp(singular, N1),np(_, F1), pp(F2), pp(N2), [?], {call(F1, N1, X),  writeln(X), call(F2, X, N2)}.
 
 % Entscheidungsfrage: Ist Kurt ein Mann?
-s --> vp(singular, Name),  np(_, Funktion), [?], {call(Funktion, Name)}.
+s(_) --> vp(singular, [Name]),  np(_, Funktion), [?], {call(Funktion, Name)}.
+
+
+% Antwortsatz schreiben
+w([X|[]]):- write(X), write('.\n').
+w([X|R]):- write(X), write(' '), w(R).
 
 % Funktionsaufruf für Funktionslisten
 c([F|[]], Name1, Name2):- call(F, Name1, Name2).
