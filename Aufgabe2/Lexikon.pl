@@ -52,35 +52,36 @@ name(X)                     --> [X], {lex(X, name)}.
 
 lex(ist, verb, singular).
 lex(sind, verb, plural).
-lex(die, artikel, _).
-lex(der, artikel, _).
-lex(des, artikel, _).
-lex(ein, artikelUnbestimmt, singular).
-lex(eine, artikelUnbestimmt, singular).
-lex(halbschwester, nomen, singular, halbschwester).
-lex(halbschwestern, nomen, plural, halbschwester).
-lex(bruder, nomen, singular, bruder).
-lex(bruders, nomen, singular, bruder).
-lex(brueder, nomen, plural, bruder).
-lex(schwester, nomen, singular, schwester).
-lex(schwestern, nomen, plural, schwester).
-lex(cousin, nomen, singular, cousin).
-lex(cousins, nomen, plural, cousin).
-lex(cousine, nomen, singular, cousine).
-lex(cousinen, nomen, plural, cousin).
-lex(vater, nomen, singular, vater).
-lex(vaters, nomen, singular, vater).
-lex(mutter, nomen, singular, mutter).
-lex(kind, nomen, singular, kind).
-lex(kindes, nomen, singular, kind).
-lex(mann, nomen, singular, mann).
-lex(mannes, nomen, singular, mann).
-lex(frau, nomen, singular, frau).
-lex(tochter, nomen, singular, tochter).
-lex(sohn, nomen, singular, sohn).
-lex(sohnes, nomen, singular, sohn).
+lex(die, artikel, _,nogenetiv).
+lex(der, artikel, _, _).
+lex(des, artikel, _,genetiv).
+lex(ein, artikelUnbestimmt, singular, nogenetiv).
+lex(eine, artikelUnbestimmt, singular, nogenetiv).
+lex(halbschwester, nomen, singular, halbschwester,_).
+lex(halbschwestern, nomen, plural, halbschwester,_).
+lex(bruder, nomen, singular, bruder,_).
+lex(bruders, nomen, singular, bruder,genetiv).
+lex(brueder, nomen, plural, bruder,nogenetiv).
+lex(schwester, nomen, singular, schwester,_).
+lex(schwestern, nomen, plural, schwester, nogenetiv).
+lex(cousin, nomen, singular, cousin, nogenetiv).
+lex(cousins, nomen, plural, cousin, _).
+lex(cousins, nomen, singular, cousin, genetiv).
+lex(cousine, nomen, singular, cousin,_).
+lex(cousinen, nomen, plural, cousin,_).
+lex(vater, nomen, singular, vater,_).
+lex(vaters, nomen, singular, vater,_).
+lex(mutter, nomen, singular, mutter,_).
+lex(kind, nomen, singular, kind,_).
+lex(kindes, nomen, singular, kind,_).
+lex(mann, nomen, singular, mann,_).
+lex(mannes, nomen, singular, mann,_).
+lex(frau, nomen, singular, frau,_).
+lex(tochter, nomen, singular, tochter,_).
+lex(sohn, nomen, singular, sohn,_).
+lex(sohnes, nomen, singular, sohn,_).
 lex(wer, interrogativpronomen).
-lex(von, praeposition).
-lex(vom, praeposition). % eigentlich nur im Dativ
+lex(von, praeposition, nogenetiv).
+lex(vom, praeposition, nogenetiv). % eigentlich nur im Dativ
 lex(Name, name) :- mann(Name).
 lex(Name, name) :- frau(Name).
