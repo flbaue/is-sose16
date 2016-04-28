@@ -5,19 +5,37 @@ start() :- writeln("Frage:"), read_sentence(X), s(X, X, []).
 
 % Ergänzungsfrage: Wer ist der Bruder von Hanna?
 %s --> interrogativpronomen, vp(Numerus, Funktion) , pp(Name), [?], {call(Funktion, X, Name), writeln(X), Numerus == singular}.
-s(X) --> interrogativpronomen, vp(Numerus, FunktionL, Name), [?], {c(FunktionL, A, Name), X = [_|R], delete([A|R], ?, Y),w(Y), Numerus == singular}.
+s(X) --> 	interrogativpronomen, vp(Numerus, FunktionL, Name), [?], !,
+			{c(FunktionL, A, Name), X = [_|R], 
+			delete([A|R], ?, Y), w(Y), Numerus == singular}.
 
 % Entscheidungsfrage: Ist Nela die Mutter des Bruders von Hanna?
 %s --> vp(singular, Name1), np(_, Funktion), pp(Name2), [?], {call(Funktion, Name1, Name2)}.
-s(_) --> verb(singular), name(Name1), np_rec(_, FunktionL, Name2),  [?], {(var(Name2), !, FunktionL = [F|_], call(F, Name1); c(FunktionL, Name1, Name2))}.
+s(Frage) --> 	verb(singular), 
+				name(Name1), 
+				np_rec(_, FunktionL, Name2),  [?], {delete(Frage, ?, Y),
+				(var(Name2), !, FunktionL = [F|_], (call(F, Name1), w1(Y); not(call(F, Name1)), w2(Y)); c(FunktionL, Name1, Name2), w1(Y))}.
 %s --> vp(singular, N1),np(_, F1), pp(F2), pp(N2), [?], {call(F1, N1, X),  writeln(X), call(F2, X, N2)}.
 
 % Entscheidungsfrage: Ist Kurt ein Mann?
-s(_) --> verb(singular), name(Name),  np(_, Funktion, _), [?], {call(Funktion, Name)}.
+/*s(Frage) --> 	verb(singular), 
+				name(Name),  
+				np(_, Funktion, _), [?], 
+				{call(Funktion, Name), delete(Frage, ?, Y), w1('Ja',Y)}.*/
 
+s(_Frage) --> {writeln("kein(e)")}.%{delete(Frage, ?, Y), w2(Y)}.
 
-% Antwortsatz schreiben
+% Antwortsatz(Entscheidungsfrage) schreiben
+w1([E1,E2|R]):- append(['Ja'],[E2,E1|R], Res), w(Res).
+
+% Antwortsatz(Entscheidungsfrage) schreiben
+w2(['ist',E2,_E3|R]):- append(['Nein'],[E2,'ist','kein(e)'|R], Res), w(Res).
+
+% Antwortsatz(Ergänzungsfrage) schreiben
 w([X|[]]):- write(X), write('.\n').
+w(['sind'|R]):- write('ist'), write(' '), w(R), !.
+w(['halbschwestern'|R]):- write('halbschwester'), write(' '), w(R), !.
+w(['brueder'|R]):- write('bruder'), write(' '), w(R), !.
 w([X|R]):- write(X), write(' '), w(R).
 
 % Funktionsaufruf für Funktionslisten
@@ -36,11 +54,11 @@ pp(Name) --> praeposition(_), name(Name).
 np_rec(Numerus, Funktion, Name) --> {Funktion = [F]}, np(Numerus, F, Name).
 np_rec(Numerus, Funktion, Name) --> {Funktion = [F|FL]}, np(Numerus, F, _), np_rec(Numerus, FL, Name).
 
-np(Numerus, Funktion, _) --> artikel(Numerus, Fall), nomen(Numerus, Funktion, Fall).
-np(Numerus, Funktion, _) --> artikelUnbestimmt(Numerus, Fall), nomen(Numerus, Funktion, Fall).
-np(Numerus, Funktion, Name) --> artikel(Numerus, Fall), nomen(Numerus, Funktion, Fall), pp(Name).
-np(Numerus, Funktion, Name) --> artikelUnbestimmt(Numerus, Fall), nomen(Numerus, Funktion, Fall), pp(Name).
-np(singular, _, Name)    --> name(Name).
+np(Numerus, Funktion, _) 		--> artikel(Numerus, Fall), nomen(Numerus, Funktion, Fall).
+np(Numerus, Funktion, _) 		--> artikelUnbestimmt(Numerus, Fall), nomen(Numerus, Funktion, Fall).
+np(Numerus, Funktion, Name) 	--> artikel(Numerus, Fall), nomen(Numerus, Funktion, Fall), pp(Name).
+np(Numerus, Funktion, Name) 	--> artikelUnbestimmt(Numerus, Fall), nomen(Numerus, Funktion, Fall), pp(Name).
+np(singular, _, Name)    		--> name(Name).
 
 
 interrogativpronomen              --> [X], {lex(X, interrogativpronomen)}.
