@@ -9,89 +9,84 @@
 
 
 start_description([
-  block(block1),
-  block(block2),
-  block(block3),
-  block(block4),  %mit Block4
-  on(table,block2),
-  on(table,block3),
-  on(block2,block1),
-  on(table,block4), %mit Block4
-  clear(block1),
-  clear(block3),
-  clear(block4), %mit Block4
-  handempty
+  b(b1),
+  b(b2),
+  b(b3),
+  /*b(b4),  %mit Block4*/
+  on(t,b2),
+  on(t,b3),
+  on(b2,b1),
+ % on(t,b4), %mit Block4
+  c(b1),
+  c(b3),
+  /*c(b4), %mit Block4*/
+  he
   ]).
 
 goal_description([
-  block(block1),
-  block(block2),
-  block(block3),
-  block(block4), %mit Block4
-  on(block4,block2), %mit Block4
-  on(table,block3),
-  on(table,block1),
-  on(block1,block4), %mit Block4
-%  on(block1,block2), %ohne Block4
-  clear(block3),
-  clear(block2),
-  handempty
+  b(b1),
+  b(b2),
+  b(b3),
+  /*b(b4), %mit Block4*/
+  on(b4,b2), %mit Block4
+  on(t,b3),
+  on(t,b1),
+/* on(b1,b4), %mit Block4*/
+ on(b1,b2), %ohne Block4
+  c(b3),
+  c(b2),
+  he
   ]).
-
-
 
 start_node((start,_,_)).
 
 goal_node((_,State,_)):-
-  "Zielbedingungen einlesen"
-  "Zustand gegen Zielbedingungen testen".
-
-
+ %1. "Zielbedingungen einlesen"
+	goal_description(Ziel),
+  %2. "Zustand gegen Zielbedingungen testen".
+	state_member(State,Ziel).
 
 % Aufgrund der Komplexität der Zustandsbeschreibungen kann state_member nicht auf 
-% das Standardprädikat member zurückgeführt werden.
-%  
+% das Standardprädikat member zurückgeführt werden. 
 state_member(_,[]):- !,fail.
 
 state_member(State,[FirstState|_]):-
-  "Test, ob State bereits durch FirstState beschrieben war. Tipp: Eine 
-  Lösungsmöglichkeit besteht in der Verwendung einer Mengenoperation, z.B. subtract"  ,!.  
+  %3. "Test, ob State bereits durch FirstState beschrieben war. Tipp: Eine Lösungsmöglichkeit besteht in der Verwendung einer Mengenoperation, z.B. subtract"  ,!.  
 
 %Es ist sichergestellt, dass die beiden ersten Klauseln nicht zutreffen.
 state_member(State,[_|RestStates]):-  
-  "rekursiver Aufruf".
-
+ %4. "rekursiver Aufruf".
+	state_member(State,RestStates).
 
 eval_path([(_,State,Value)|RestPath]):-
-  eval_state(State,"Rest des Literals bzw. der Klausel"
-  "Value berechnen".
+  eval_state(State,RestPath), %5. "Rest des Literals bzw. der Klausel"
+  %6. "Value berechnen".
 
   
 
 action(pick_up(X),
-       [handempty, clear(X), on(table,X)],
-       [handempty, clear(X), on(table,X)],
-       [holding(X)]).
+       [he, c(X), on(t,X)],
+       [he, c(X), on(t,X)],
+       [ho(X)]).
 
 action(pick_up(X),
-       [handempty, clear(X), on(Y,X), block(Y)],
-       [handempty, clear(X), on(Y,X)],
-       [holding(X), clear(Y)]).
+       [he, c(X), on(Y,X), b(Y)],
+       [he, c(X), on(Y,X)],
+       [ho(X), c(Y)]).
 
 action(put_on_table(X),
-       [holding(X)],
-       [holding(X)],
-       [handempty, clear(X), on(table,X)]).
+       [ho(X)],
+       [ho(X)],
+       [he, c(X), on(t,X)]).
 
 action(put_on(Y,X),
-       [holding(X), clear(Y)],
-       [holding(X), clear(Y)],
-       [handempty, clear(X), on(Y,X)]).
+       [ho(X), c(Y)],
+       [ho(X), c(Y)],
+       [he, c(X), on(Y,X)]).
 
 
 % Hilfskonstrukt, weil das PROLOG "subset" nicht die Unifikation von Listenelementen 
 % durchführt, wenn Variablen enthalten sind. "member" unifiziert hingegen.
-%
 mysubset([],_).
 mysubset([H|T],List):-
   member(H,List),
@@ -99,36 +94,14 @@ mysubset([H|T],List):-
 
 
 expand_help(State,Name,NewState):-
-  "Action suchen"
-  "Conditions testen"
-  "Del-List umsetzen"
-  "Add-List umsetzen".
+  %7. "Action suchen"
+
+  %8."Conditions testen"
+
+  %9. "Del-List umsetzen"
+
+  %10."Add-List umsetzen".
   
 expand((_,State,_),Result):-
   findall((Name,NewState,_),expand_help(State,Name,NewState),Result).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
