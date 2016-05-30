@@ -7,36 +7,29 @@
 %   expand              ;Berechnung der Kind-Zustandsbeschreibungen
 %   eval-path		;Bewertung eines Pfades
 
-
+%----ohne Block4-------------------------
 start_description([
   b(b1),
   b(b2),
   b(b3),
-  /*b(b4),  %mit Block4*/
   on(t,b2),
   on(t,b3),
   on(b2,b1),
- % on(t,b4), %mit Block4
   c(b1),
   c(b3),
-  /*c(b4), %mit Block4*/
-  he
-  ]).
+  he]).
 
 goal_description([
   b(b1),
   b(b2),
   b(b3),
-  /*b(b4), %mit Block4*/
-  %on(b4,b2), %mit Block4
   on(t,b3),
   on(t,b1),
-/* on(b1,b4), %mit Block4*/
- on(b1,b2), %ohne Block4
+  on(b1,b2),
   c(b3),
   c(b2),
-  he
-  ]).
+  he]).
+%--------------------------------------
 
 start_node((start,_,_)).
 
@@ -59,18 +52,68 @@ state_member(State,[_|RestStates]):-
  %4. "rekursiver Aufruf".
 	state_member(State,RestStates).
 
+state_member(State,[FirstState|_]):-
+  mysubset(State,FirstState).
 
-
-eval_path([(_,State,Value)|RestPath]):-
-  eval_state(State, Value). %5. "Rest des Literals bzw. der Klausel"
+%eval_path([(_,State,Value)|RestPath]):-
+% eval_state(State, Value). %5. "Rest des Literals bzw. der Klausel"
   %6. "Value berechnen".
+ 
+eval_path(Suchverfahren,Path):-
+  length(Path,G),
+  eval_state(Suchverfahren,Path,G).
+
+eval_state(a,[(_,State,Value)|_],G) :-
+  heuristik(wrong_pos,State,Heuristik),
+  Value is Heuristik + G.
+  
+eval_state(astar,[(_,State,Value)|_],G) :-
+  heuristik(wrong_pos_astar,State,Heuristik),
+  Value is Heuristik + G.
+  
+eval_state(greedy,[(_,State,Heuristik)|_],_) :-
+  heuristik(wrong_pos,State,Heuristik).
+
+heuristik(wrong_pos,State,Value) :-
+	goal_description(Ziel),
+	subtract(Ziel,State,Diffmenge),%Diffmenge = Ziel\State
+	length(Diffmenge,Value).
+
+heuristik(wrong_pos_astar,State,Value) :-
+  goal_description(Ziel),
+  subtract(Ziel,State,Diffmenge),%Diffmenge = Ziel\State
+  length(Diffmenge,Diffmengelen),
+  Value is ceiling(Diffmengelen/3).%aufrunden
+
+% Hilfskonstrukt, weil das PROLOG "subset" nicht die Unifikation von Listenelementen
+% durchf�hrt, wenn Variablen enthalten sind. "member" unifiziert hingegen.
+mysubset([],_).
+mysubset([H|T],List):-
+  member(H,List),
+  mysubset(T,List).
 
 
+expand_help(State,Name,NewState):-
+  %7. "Action suchen"
+  action(Name, Con, Del, Add),%Name wird belegt
+  %8."Conditions testen"
+  mysubset(Con,State),
+  %9. "Del-List umsetzen": Lösche alle Elemente in Del die in State enthalten sind
+	%hier: Diffmenge = State\Del
+  subtract(State, Del, Diffmenge),
+  %10."Add-List umsetzen".
+  union(Diffmenge, Add, NewState).%NewState wird belegt
 
-action(pick_up(X),
-       [he, c(X), on(t,X)],
-       [he, c(X), on(t,X)],
-       [ho(X)]).
+%Result ist hier eine Liste, z.B. 
+%[(put_on_table(b1),[b(b1),b(b2),b(b3),on(t,b3),c(b2),on(b3,b2),he,c(b1),on(t,b1)],_G9852), 
+%(put_on(b2,b1),[b(b1),b(b2),b(b3),on(t,b3),on(b3,b2),he,c(b1),on(b2,b1)],_G9800)].
+expand((_,State,_),Result):-
+  findall((Name,NewState,_),expand_help(State,Name,NewState),Result).
+
+action(pick_up(X), %Action
+       [he, c(X), on(t,X)],%Con
+       [he, c(X), on(t,X)],%Del
+       [ho(X)]).%Add
 
 action(pick_up(X),
        [he, c(X), on(Y,X), b(Y)],
@@ -86,28 +129,3 @@ action(put_on(Y,X),
        [ho(X), c(Y)],
        [ho(X), c(Y)],
        [he, c(X), on(Y,X)]).
-
-
-% Hilfskonstrukt, weil das PROLOG "subset" nicht die Unifikation von Listenelementen
-% durchf�hrt, wenn Variablen enthalten sind. "member" unifiziert hingegen.
-mysubset([],_).
-mysubset([H|T],List):-
-  member(H,List),
-  mysubset(T,List).
-
-
-expand_help(State,Name,NewState):-
-  %7. "Action suchen"
-  action(Act, Con, Del, Add),
-  %8."Conditions testen"
-  mysubset(Con,State),
-  %9. "Del-List umsetzen"
-  subtract(State, Del, R1),
-  %10."Add-List umsetzen".
-  union(R1, Add, R2),
-
-  Name = Act,
-  NewState = R2.
-
-expand((_,State,_),Result):-
-  findall((Name,NewState,_),expand_help(State,Name,NewState),Result).
