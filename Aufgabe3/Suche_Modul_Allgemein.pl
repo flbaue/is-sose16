@@ -12,15 +12,15 @@ solve(StartNode,Strategy) :-
 % Abbruchbedingung: Wenn ein Zielzustand erreicht ist, wird der aktuelle Pfad an den dritten Parameter übertragen.
 %FirstNode wird am Anfang des Pfades hinzugefügt, danah wird geprüft ob das ziel erreicht wurde
 search([[FirstNode|Predecessors]|_],_,[FirstNode|Predecessors]) :- 
-  writeln('Ziel erreicht?'),
+ % writeln('Ziel erreicht?'),
   goal_node(FirstNode),
   nl,write('SUCCESS'),nl,!.
 
 
 search([[FirstNode|Predecessors]|RestPaths],Strategy,Solution) :- 
- ansi_format([bold,fg(cyan)], 'Firstnode ~w', [FirstNode]),nl,
+ %ansi_format([bold,fg(cyan)], 'Firstnode ~w', [FirstNode]),nl,
  expand(FirstNode,Children),                                    % Nachfolge-Zustände berechnen
- ansi_format([bold,fg(yellow)], "Expand: Children from Firstnode: ~w",[Children]),nl,
+ %ansi_format([bold,fg(yellow)], "Expand: Children from Firstnode: ~w",[Children]),nl,
 %write_actions(Children),
   generate_new_paths(Children,[FirstNode|Predecessors],NewPaths), % Nachfolge-Zustände einbauen: NewPaths ist eine LISTE von Pfaden
   insert_new_paths(Strategy,NewPaths,RestPaths,AllPaths),        % Neue Pfade einsortieren
@@ -29,7 +29,7 @@ search([[FirstNode|Predecessors]|RestPaths],Strategy,Solution) :-
 generate_new_paths(Children,Path,NewPaths):- 
 	%maplist(Prädikat, Fromlist, ToNewlist): Alle Zustände dem Path entlang werden in States eingefügt
   maplist(get_state,Path,States),
-  ansi_format([bold,fg(green)], "maplist(get_state,Path,States): ~w",[States]),nl,
+ % ansi_format([bold,fg(green)], "maplist(get_state,Path,States): ~w",[States]),nl,
   generate_new_paths_help(Children,Path,States,NewPaths).
 
 
@@ -59,14 +59,14 @@ insert_new_paths(Strategy,[],OldPaths,OldPaths):-
 
 % Tiefensuche
 insert_new_paths(depth,NewPaths,OldPaths,AllPaths):-
-  append(NewPaths,OldPaths,AllPaths),
-  write_action(NewPaths).
+  append(NewPaths,OldPaths,AllPaths).
+  %write_action(NewPaths).
 
 % Breitensuche
 insert_new_paths(breadth,NewPaths,OldPaths,AllPaths):-
-  append(OldPaths,NewPaths,AllPaths),
-  write_next_state(AllPaths),
-  write_action(AllPaths).
+  append(OldPaths,NewPaths,AllPaths).
+  %write_next_state(AllPaths),
+  %write_action(AllPaths).
 
 % Informierte Suche: alt
 /*insert_new_paths(informed,NewPaths,OldPaths,AllPaths):-
@@ -78,24 +78,24 @@ insert_new_paths(breadth,NewPaths,OldPaths,AllPaths):-
 % Optimistisches Bergsteigen
 insert_new_paths(hill_climbing,NewPaths,_,[BestPath]):-
   eval_paths(greedy,NewPaths),
-  insert_new_paths_informed(NewPaths,[],[BestPath|_]),
-  write_action([BestPath]),
-  write_state([BestPath]).
+  insert_new_paths_informed(NewPaths,[],[BestPath|_]).
+ % write_action([BestPath]),
+  %write_state([BestPath]).
 
 % Optimistisches Bergsteigen mit Backtracking
 insert_new_paths(hill_climbing_bt,NewPaths,OldPaths,AllPaths):-
   eval_paths(greedy,NewPaths),
   insert_new_paths_informed(NewPaths,[],SortedPaths),
-  append(SortedPaths,OldPaths,AllPaths),
-  write_action(SortedPaths),
-  write_state(SortedPaths).
+  append(SortedPaths,OldPaths,AllPaths).
+ % write_action(SortedPaths),
+  %write_state(SortedPaths).
 
 % Informierte Suche: A, A*, Gierige Bestensuche
 insert_new_paths(Suchverfahren,NewPaths,OldPaths,AllPaths):-
   eval_paths(Suchverfahren,NewPaths),
-  insert_new_paths_informed(NewPaths,OldPaths,AllPaths),
-  write_action(AllPaths),
-  write_state(AllPaths).
+  insert_new_paths_informed(NewPaths,OldPaths,AllPaths).
+%  write_action(AllPaths),
+%  write_state(AllPaths).
 
 write_solution(Path):-
   nl,write('SOLUTION:'),nl,
