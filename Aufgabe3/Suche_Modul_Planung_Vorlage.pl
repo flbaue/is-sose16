@@ -7,29 +7,35 @@
 %   expand              ;Berechnung der Kind-Zustandsbeschreibungen
 %   eval-path		;Bewertung eines Pfades
 
-%----ohne Block4-------------------------
+%-----mit 6 Blöcken---------------------------------------------------
 start_description([
-  b(b1),
-  b(b2),
-  b(b3),
+  b(b1), b(b2), b(b3), b(b4), b(b5), b(b6),
   on(t,b2),
   on(t,b3),
-  on(b2,b1),
+  on(t,b4),
+  on(t,b1),
+  on(b4,b6),
+  on(b6,b5),
   c(b1),
+  c(b2),
   c(b3),
+  c(b5),
   he]).
 
 goal_description([
-  b(b1),
-  b(b2),
-  b(b3),
+  b(b1), b(b2), b(b3), b(b4), b(b5), b(b6),
+  on(t,b2),
   on(t,b3),
-  on(t,b1),
-  on(b1,b2),
+  on(t,b4),
+  on(t,b6),
+  on(b2,b1),
+  on(b1,b5),
+  c(b4),
   c(b3),
-  c(b2),
+  c(b5),
+  c(b6),
   he]).
-%--------------------------------------
+%------------------------------------------------------------------
 
 start_node((start,_,_)).
 
@@ -37,7 +43,8 @@ goal_node((_,State,_)):-
  %1. "Zielbedingungen einlesen"
 	goal_description(Ziel),
   %2. "Zustand gegen Zielbedingungen testen".
-	state_member(State,[Ziel]).
+	%state_member(State,[Ziel]).
+  mysubset(Ziel,State).
 
 % Aufgrund der Komplexit�t der Zustandsbeschreibungen kann state_member nicht auf
 % das Standardpr�dikat member zur�ckgef�hrt werden.
@@ -52,13 +59,13 @@ state_member(State,[_|RestStates]):-
  %4. "rekursiver Aufruf".
 	state_member(State,RestStates).
 
-state_member(State,[FirstState|_]):-
-  mysubset(State,FirstState).
+%state_member(State,[FirstState|_]):-
+  %mysubset(State,FirstState).
 
 %eval_path([(_,State,Value)|RestPath]):-
 % eval_state(State, Value). %5. "Rest des Literals bzw. der Klausel"
   %6. "Value berechnen".
- 
+
 eval_path(Suchverfahren,Path):-
   length(Path,G),
   eval_state(Suchverfahren,Path,G).
@@ -66,24 +73,48 @@ eval_path(Suchverfahren,Path):-
 eval_state(a,[(_,State,Value)|_],G) :-
   heuristik(wrong_pos,State,Heuristik),
   Value is Heuristik + G.
-  
+
 eval_state(astar,[(_,State,Value)|_],G) :-
-  heuristik(wrong_pos_astar,State,Heuristik),
+  heuristik(wrong_pos,State,Heuristik),
   Value is Heuristik + G.
-  
+
 eval_state(greedy,[(_,State,Heuristik)|_],_) :-
   heuristik(wrong_pos,State,Heuristik).
 
 heuristik(wrong_pos,State,Value) :-
 	goal_description(Ziel),
 	subtract(Ziel,State,Diffmenge),%Diffmenge = Ziel\State
-	length(Diffmenge,Value).
+
+  % 1 wenn die hand belegt ist, sonst 0.
+  isHandFilled(Diffmenge,H),
+
+  % 1 für jeden block der auf dem Tisch steht und noch nicht erfüllt wurde,
+  % plus der Anzahl aller blöcke die oben drauf sind.
+  countOnTable(Diffmenge, Count),
+  Value is H + Count.
+	%length(Diffmenge,Value).
 
 heuristik(wrong_pos_astar,State,Value) :-
   goal_description(Ziel),
   subtract(Ziel,State,Diffmenge),%Diffmenge = Ziel\State
   length(Diffmenge,Diffmengelen),
   Value is ceiling(Diffmengelen/3).%aufrunden
+
+isHandFilled(M,0):- mysubset([he],M).
+isHandFilled(_,1).
+
+
+countOnTable([],0).
+countOnTable([on(t,X)|R],C):- countAbove(R,X,C3), countOnTable(R,C2),  C is C2 + C3 + 1.
+countOnTable([_|R],C):- countOnTable(R,C).
+
+
+countAbove([],_,0).
+countAbove(M,X,0):- mysubset([c(X)],M).
+countAbove(M,X,C):- mysubset([on(X,Y)],M), countAbove(M,Y,C2), C is 1 + C2.
+
+
+htest():- trace(), countOnTable([on(t,b2),on(b2,b1),on(b1,b5),c(b5)],C), writeln(C), notrace(), nodebug().
 
 % Hilfskonstrukt, weil das PROLOG "subset" nicht die Unifikation von Listenelementen
 % durchf�hrt, wenn Variablen enthalten sind. "member" unifiziert hingegen.
@@ -104,8 +135,8 @@ expand_help(State,Name,NewState):-
   %10."Add-List umsetzen".
   union(Diffmenge, Add, NewState).%NewState wird belegt
 
-%Result ist hier eine Liste, z.B. 
-%[(put_on_table(b1),[b(b1),b(b2),b(b3),on(t,b3),c(b2),on(b3,b2),he,c(b1),on(t,b1)],_G9852), 
+%Result ist hier eine Liste, z.B.
+%[(put_on_table(b1),[b(b1),b(b2),b(b3),on(t,b3),c(b2),on(b3,b2),he,c(b1),on(t,b1)],_G9852),
 %(put_on(b2,b1),[b(b1),b(b2),b(b3),on(t,b3),on(b3,b2),he,c(b1),on(b2,b1)],_G9800)].
 expand((_,State,_),Result):-
   findall((Name,NewState,_),expand_help(State,Name,NewState),Result).

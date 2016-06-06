@@ -13,17 +13,20 @@ insert_new_paths_informed([FirstNewPath|RestNewPaths],OldPaths,AllPaths):-
 
 insert_path_informed(NewPath,[],[NewPath]).
 
-% Wenn der Pfad billiger ist, dann wird er vorn angefügt. (Alte Pfade sind ja sortiert.)
+% Wenn der Pfad billiger ist, dann wird er vorn angefï¿½gt. (Alte Pfade sind ja sortiert.)
 %
 insert_path_informed(NewPath,[FirstPath|RestPaths],[NewPath,FirstPath|RestPaths]):-
   cheaper(NewPath,FirstPath),!.
 
-% Wenn er nicht billiger ist, wird er in den Rest insortiert und der Kopf 
+% Wenn er nicht billiger ist, wird er in den Rest insortiert und der Kopf
 % der Openliste bleibt Kopf der neuen Liste
 %
 insert_path_informed(NewPath,[FirstPath|RestPaths],[FirstPath|NewRestPaths]):-
-  insert_path_informed(NewPath,RestPaths,NewRestPaths).  
+  insert_path_informed(NewPath,RestPaths,NewRestPaths).
 
 
 cheaper([(_,_,V1)|_],[(_,_,V2)|_]):-
   V1 =< V2.
+
+cheaper_hill(_,(start,_,_)):-!.
+cheaper_hill((_,_,V1),(_,_,V2)):- V1 =< V2.
